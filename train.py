@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-@Auth ： 挂科边缘
-@File ：trian.py
-@IDE ：PyCharm
-@Motto:学习新思想，争做新青年
-@Email ：179958974@qq.com
-"""
 import warnings
 warnings.filterwarnings('ignore')
 from ultralytics import YOLO
