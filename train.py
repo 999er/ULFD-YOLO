@@ -4,7 +4,7 @@ from ultralytics import YOLO
 
 if __name__ == '__main__':
     model = YOLO(model=r'/home/featurize/work/yolov11-M4+Hyper+head/ultralytics/cfg/models/11/yolov11-M4+Hyper.yaml')
-    # model.load('/home/featurize/work/yolov13-main/yolo11n.pt') # 加载预训练权重,改进或者做对比实验时候不建议打开，因为用预训练模型整体精度没有很明显的提升
+    model.load('/home/featurize/work/yolov13-main/yolo11n.pt') # 加载预训练权重
     model.train(data=r'/home/featurize/work/yolov13-main/tranin_val.yaml',
                 imgsz=640,
                 epochs=300,
