@@ -82,6 +82,8 @@ The 15 W value refers to the configured Jetson power mode rather than externally
 
 ```text
 .
+├── data_splits/
+│   └── Fish-BJ_split_list.csv
 ├── models/
 │   └── yolov11-M4+Hyper.yaml
 ├── train.py
@@ -174,6 +176,29 @@ For prediction-export and bootstrap analysis, prediction files must contain:
 class_id center_x center_y width height confidence
 ```
 
+### Fixed Fish-BJ Split List
+
+The fixed training and held-out evaluation partition used in the manuscript is provided in:
+
+[`data_splits/Fish-BJ_split_list.csv`](data_splits/Fish-BJ_split_list.csv)
+
+The CSV contains **3,402 entries**:
+
+- **2,721** training images
+- **681** held-out evaluation images
+- **0** overlapping image filenames between the two subsets
+
+The file contains four columns:
+
+| Column | Description |
+|---|---|
+| `split` | Dataset subset: `train` or `val` |
+| `subset_index` | Sequential index within the corresponding subset |
+| `image_filename` | Original image filename |
+| `label_filename` | Corresponding YOLO annotation filename |
+
+The image and label filenames are matched by basename. The split list records subset membership only and does not include the Fish-BJ image files themselves.
+
 ## Training
 
 1. Update the model, dataset, and output paths in `train.py`.
@@ -256,8 +281,9 @@ The current partial package does not include the Fish-BJ source images or traine
 
 According to the accompanying manuscript:
 
+- The fixed Fish-BJ training/held-out partition is included as `data_splits/Fish-BJ_split_list.csv`.
 - Fish-BJ images and trained weights may be requested from the corresponding author, subject to institutional data-sharing conditions.
-- The public release is intended to include dataset split lists, bounding-box annotations, class information, stored predictions, additional random-seed configurations and outputs, and statistical-analysis scripts.
+- Additional public materials may include bounding-box annotations, class information, stored predictions, random-seed configurations and outputs, and statistical-analysis scripts.
 - WildFish source images remain subject to the original dataset provider’s terms.
 - Detection annotations created for the selected WildFish subset are intended for public release.
 
