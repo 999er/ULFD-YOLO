@@ -16,7 +16,7 @@ if __name__ == '__main__':
     model.train(data=r'/home/featurize/work/yolov13-main/tranin_val.yaml',
                 imgsz=640,
                 epochs=300,
-                batch=256,
+                batch=512,
                 workers=2,
                 device='',
                 optimizer='SGD',
