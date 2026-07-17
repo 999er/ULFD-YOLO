@@ -1,0 +1,51 @@
+# Ultralytics YOLO 🚀, AGPL-3.0 license
+# YOLOv11n + MobileNetV4_tiny + Hyper_YOLO + Detect_MBConv
+
+# Parameters
+nc: 21
+scales:
+  n: [0.50, 0.50, 1024, 6]
+
+# MobileNetV4_tiny backbone
+backbone:
+  - [-1, 1, MobileNetV4ConvTiny, []]
+  - [4, 1, SPPF, [96, 5]]              # 5
+  - [-1, 1, C3k2, [96, True]]          # 6
+
+# Hyper_YOLO head with Detect_MBConv
+head:
+  # --- Semantic Collecting ---
+  - [1, 1, nn.AvgPool2d, [8, 8, 0]]            # 7
+  - [2, 1, nn.AvgPool2d, [4, 4, 0]]            # 8
+  - [3, 1, nn.AvgPool2d, [2, 2, 0]]            # 9
+  - [[7, 8, 9, 4, 6], 1, Concat, [1]]          # 10 (304ch)
+
+  # --- Hypergraph Computation ---
+  - [-1, 1, Conv, [256, 1]]                    # 11 (256ch)
+  - [-1, 1, HyperComputeModule, [256]]         # 12 (256ch)
+  - [-1, 3, MANet, [256, True, 2, 3]]          # 13 MANet
+
+  # --- P5 ---
+  - [[-1, 6], 1, Concat, [1]]                  # 14 (256+96=352ch)
+  - [-1, 1, Conv, [192, 1, 1]]                 # 15 (192ch, s32)
+
+  # --- Top-Down FPN ---
+  - [13, 1, nn.Upsample, [None, 2, 'nearest']] # 16
+  - [[-1, 3], 1, Concat, [1]]                  # 17 (256+48=304ch)
+  - [-1, 2, C3k2, [192, False]]                # 18 (192ch, s16)
+
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 19
+  - [[-1, 2], 1, Concat, [1]]                  # 20 (192+40=232ch)
+  - [-1, 2, C3k2, [96, False]]                 # 21 P3 (96ch, s8)
+
+  # --- Bottom-Up PAN ---
+  - [-1, 1, Conv, [96, 3, 2]]                  # 22
+  - [[-1, 18], 1, Concat, [1]]                 # 23 (96+192=288ch)
+  - [-1, 2, C3k2, [192, False]]                # 24 P4 (192ch, s16)
+
+  - [-1, 1, Conv, [192, 3, 2]]                 # 25
+  - [[-1, 15], 1, Concat, [1]]                 # 26 (192+192=384ch)
+  - [-1, 2, C3k2, [384, True]]                 # 27 P5 (384ch, s32)
+
+  # Detect_MBConv head
+  - [[21, 24, 27], 1, Detect_MBConv, [nc]]     # Detect_MBConv(P3, P4, P5)
