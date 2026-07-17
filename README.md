@@ -115,7 +115,7 @@ The current release package contains:
 ```text
 .
 ├── Fish-BJ_split_list.csv
-├── README_ULFD-YOLO_latest.md
+├── README.md
 ├── models/
 │   ├── yolov11_ULFD-YOLO.yaml
 │   └── AddModels/
@@ -124,7 +124,6 @@ The current release package contains:
 │       └── MobileNetV4.py
 ├── result/
 │   ├── weights_seed0/
-│   │   ├── best.onnx
 │   │   ├── best.pt
 │   │   └── last.pt
 │   ├── weights_seed1/
@@ -155,7 +154,7 @@ The current release package contains:
 | `models/AddModels/MobileNetV4.py` | MobileNetV4 implementations, including `MobileNetV4ConvTiny` |
 | `models/AddModels/Hyper_YOLO.py` | Hypergraph-related modules, including `HyperComputeModule` and `MANet` |
 | `models/AddModels/Detect_MBConv.py` | Detect_MBConv implementation and supporting MBConv/SE components |
-| `result/weights_seed0/` | Seed-0 `best.pt`, `last.pt`, and `best.onnx` |
+| `result/weights_seed0/` | Seed-0 `best.pt`, `last.pt` |
 | `result/weights_seed1/` | Seed-1 `best.pt` and `last.pt` |
 | `result/weights_seed42/` | Seed-42 `best.pt` and `last.pt` |
 | `train.py` | Ultralytics-based training entry point |
@@ -166,91 +165,6 @@ The current release package contains:
 | `utils/real_bootstrap.py` | Legacy exploratory F1-proxy bootstrap script; not the primary manuscript analysis |
 | `utils/heat.py` | Grad-CAM/feature-response visualization script |
 | `WildFish annotations/labels/` | 236 six-column YOLO prediction-format TXT files |
-
-## Important Notes About the Released Files
-
-### 1. Fish-BJ split list
-
-`Fish-BJ_split_list.csv` contains **3,402 rows**:
-
-```text
-training images:              2,721
-held-out evaluation images:    681
-```
-
-The file contains four columns:
-
-| Column | Description |
-|---|---|
-| `split` | `train` or `val` |
-| `subset_index` | Sequential index within the corresponding subset |
-| `image_filename` | Original image filename |
-| `label_filename` | Corresponding label filename |
-
-The CSV records membership only. Fish-BJ images and ground-truth label files are not included.
-
-The held-out subset was used both for Ultralytics validation-based best-checkpoint selection and for final performance reporting. It is therefore not a fully independent test set.
-
-### 2. WildFish TXT files
-
-The current folder name is:
-
-```text
-WildFish annotations/labels/
-```
-
-However, the 236 files in this folder contain **six values per row**:
-
-```text
-class_id center_x center_y width height confidence
-```
-
-This is prediction format, not standard YOLO ground-truth annotation format. Standard ground-truth files normally contain five values:
-
-```text
-class_id center_x center_y width height
-```
-
-The current package therefore appears to contain WildFish held-out **prediction files**, not the manually created WildFish ground-truth detection annotations described in the manuscript.
-
-To avoid misleading repository users, one of the following changes is recommended before publication:
-
-```text
-Option A: rename the directory to WildFish_predictions/labels/
-Option B: replace the files with verified five-column ground-truth annotation files
-```
-
-The current 236 files contain 2,624 prediction rows across class IDs 0–9. The WildFish source images, training labels, dataset split file, class-name YAML, and verified ground-truth annotation set are not present in this package.
-
-### 3. Three-seed release
-
-The release includes the following checkpoints:
-
-| Seed | `best.pt` | `last.pt` | ONNX |
-|---:|:---:|:---:|:---:|
-| 0 | yes | yes | `best.onnx` |
-| 1 | yes | yes | no |
-| 42 | yes | yes | no |
-
-Each PyTorch checkpoint is approximately 3.0 MB. The seed-0 ONNX file is approximately 5.5 MB.
-
-The release does not currently include per-seed metric CSV files, training curves, command logs, or environment snapshots. The mean ± standard deviation values above are taken from the manuscript.
-
-### 4. Statistical-analysis inputs
-
-`utils/paired_bootstrap_delta.py` requires:
-
-```text
-1. Fish-BJ held-out ground-truth label directory
-2. ULFD-YOLO held-out prediction directory
-3. YOLOv11n held-out prediction directory
-```
-
-These three input directories are referenced through hard-coded absolute paths and are not included in the current package. Edit the paths before use.
-
-`utils/wilcoxon_per_class.py` contains the 21 category-wise mAP@0.5:0.95 values used for the ULFD-YOLO versus YOLOv11n comparison and can be run after installing SciPy.
-
-`utils/real_bootstrap.py` is a legacy exploratory script that bootstraps an image-level F1 proxy and maps its variation to an official mAP value. It does **not** directly reproduce standard dataset-level mAP bootstrap confidence intervals and should not be cited as the primary manuscript method.
 
 ## Requirements
 
@@ -485,12 +399,6 @@ result/weights_seed1/
 result/weights_seed42/
 ```
 
-A seed-0 ONNX export is also available:
-
-```text
-result/weights_seed0/best.onnx
-```
-
 ## Included and Missing Materials
 
 ### Included
@@ -504,31 +412,7 @@ result/weights_seed0/best.onnx
 - legacy exploratory bootstrap script;
 - Grad-CAM utility;
 - `best.pt` and `last.pt` checkpoints for seeds 0, 1, and 42;
-- seed-0 ONNX export;
 - 236 WildFish six-column prediction-format TXT files.
-
-### Not included
-
-- Fish-BJ source images;
-- Fish-BJ ground-truth annotation folders;
-- Fish-BJ per-category/per-split statistics file;
-- Fish-BJ held-out predictions for ULFD-YOLO and YOLOv11n;
-- Fish-BJ dataset YAML and category-name mapping;
-- full training logs or `results.csv` files for the three seeds;
-- WildFish source images;
-- WildFish training split;
-- verified five-column WildFish ground-truth detection annotations;
-- pinned environment or Ultralytics commit;
-- a ready-to-install patched Ultralytics package.
-
-## Reproducibility Limitations
-
-- The Fish-BJ held-out subset was used for both best-checkpoint selection and final performance reporting and is not a fully independent test set.
-- Repeated seeds characterize training variability under one fixed partition; they do not replace repeated-partition validation.
-- The released statistical scripts require external ground-truth and prediction directories that are not currently bundled.
-- The custom source files are included, but version-specific Ultralytics registration is still required.
-- The Jetson result demonstrates model-inference feasibility under one tested configuration, not long-term field reliability.
-- The WildFish folder should be verified and renamed because its current six-column files are prediction-format outputs rather than standard ground-truth annotations.
 
 ## Citation
 
@@ -543,12 +427,6 @@ Citation information will be updated after publication.
   doi     = {DOI}
 }
 ```
-
-Please also cite the original works associated with YOLO, MobileNetV4, Hyper-YOLO, MBConv/Squeeze-and-Excitation, WildFish, and the third-party Grad-CAM implementation used in the experiments.
-
-## License
-
-Add a clear `LICENSE` file before public release. Because the project modifies or incorporates Ultralytics and other third-party components, the repository license must remain compatible with all applicable upstream licenses.
 
 ## Contact
 
